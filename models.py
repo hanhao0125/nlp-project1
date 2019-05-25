@@ -1,5 +1,9 @@
 from settings import db
 from typing import Dict, List, Tuple
+from config import BASE_SAVE_DIR
+import pandas as pd
+import numpy as np
+from stanfordcorenlp import StanfordCoreNLP
 
 
 class Content(db.Model):
@@ -10,17 +14,33 @@ class Content(db.Model):
     def __repr__(self):
         return "<Content %r>" % self.id
 
-def save_to_files(save_path: str = "123") -> None:
-    with open("./news_content.txt", "w") as f:
-        n = Content.query.all()
-        for i in n:
-            f.write(i.content)
 
-def read_txt_files(path:str="./news_content.txt")->None:
-    with open(path,'r') as f:
-        for i in f.readlines():
-            print(i)
+def save_to_files(save_path: str = "news_content.csv") -> None:
+    data = pd.read_sql_query("select * from news_content", db.engine)
+    data.to_csv(BASE_SAVE_DIR + save_path, index=False)
+
+
+def read_news_content(path: str = 'news_content.csv') -> pd.DataFrame:
+    return pd.read_csv(BASE_SAVE_DIR + path)
+
+
+def process_content() -> pd.DataFrame:
+    d = read_news_content()
+
+    return d
+
+
+def corenlp() -> None:
+    nlp = StanfordCoreNLP('/Users/hanhao/Downloads/stanford-corenlp-full-2018-10-05/')
+    sentence = 'Guangdong University of Foreign Studies is located in Guangzhou.'
+    print(nlp.word_tokenize(sentence))
+    print(nlp.pos_tag(sentence))
+    print(nlp.ner(sentence))
+    print(nlp.parse(sentence))
+    print(nlp.dependency_parse(sentence))
+
+
 if __name__ == "__main__":
-    # save_to_files()
-    read_txt_files()
-    # print(Content.query.all())
+    d = read_news_content()
+    print(d.head())
+    print(d.shape)
