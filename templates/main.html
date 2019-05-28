@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>News</title>
+</head>
+<body>
+<h1>新闻言论提取</h1>
+<div>
+    <ul>
+        {% for i in n %}
+            <li>
+                <a href="p?title={{ i }}">{{ i }}</a></li>
+        {% endfor %}
+    </ul>
+
+</div>
+</body>
+</html>
