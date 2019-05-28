@@ -3,7 +3,6 @@ from typing import Dict, List, Tuple
 from config import BASE_SAVE_DIR
 import pandas as pd
 import numpy as np
-from stanfordcorenlp import StanfordCoreNLP
 
 
 class Content(db.Model):
@@ -29,16 +28,20 @@ def process_content() -> pd.DataFrame:
 
     return d
 
+class WangYi(db.Model):
+    __tablename__ = "wangyi"
+    id = db.Column(db.Integer,primary_key=True)
+    title = db.Column(db.Text, nullable=False, server_default="")
+    content = db.Column(db.Text, nullable=False, server_default="")
+    abstract = db.Column(db.Text, nullable=False, server_default="")
 
-def corenlp() -> None:
-    nlp = StanfordCoreNLP('/Users/hanhao/Downloads/stanford-corenlp-full-2018-10-05/')
-    sentence = 'Guangdong University of Foreign Studies is located in Guangzhou.'
-    print(nlp.word_tokenize(sentence))
-    print(nlp.pos_tag(sentence))
-    print(nlp.ner(sentence))
-    print(nlp.parse(sentence))
-    print(nlp.dependency_parse(sentence))
+    date = db.Column(db.Text, nullable=False, server_default="")
+    url = db.Column(db.Text, nullable=False, server_default="")
+    comments = db.Column(db.Text, nullable=False, server_default="")
+    heat = db.Column(db.Text, nullable=False, server_default="")
 
+    def __repr__(self):
+        return "<Content %r>" % self.id
 
 if __name__ == "__main__":
     d = read_news_content()

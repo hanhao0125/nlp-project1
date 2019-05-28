@@ -8,6 +8,12 @@
 <h1>News</h1>
 {{ c }}
 <hr>
-{{ p }}
+    <ul>
+        {% for i in p %}
+            <li>
+                <b>{{ i[0] }}:</b>{{ i[1] }}
+        {% endfor %}
+    </ul>
+    
 </body>
 </html>

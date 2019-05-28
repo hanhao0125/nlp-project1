@@ -6,4 +6,5 @@ extracted/
 saved_files/
 .idea/
 .ipynb_checkpoints/
+news.db
 
