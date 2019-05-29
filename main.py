@@ -23,7 +23,7 @@ def p():
     news_id = request.args.get('id')
     news = W.query.get(news_id)
     p = fetch(news.content)
-    return render_template('p.html', c=news.title, p=p)
+    return render_template('p.html', t=news.title,c=news.content, p=p)
 
 
 @app.route('/')
