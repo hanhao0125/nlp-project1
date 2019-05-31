@@ -16,16 +16,14 @@ postagger.load('/root/files/ltp_data_v3.4.0/pos.model')
 recongnizer = NamedEntityRecognizer()
 recongnizer.load('/root/files/ltp_data_v3.4.0/ner.model')
 
-# wm = KeyedVectors.load_word2vec_format(word2vec_model_path,
-#                                        binary=False,
-#                                        unicode_errors='ignore')
 r = None
 with open('./saved_files/r.pkl','rb') as f:
     r = pkl.load(f)
 
 end = {'。','!','?'}
 say_represents = r
-
+update = {'的','和','但','是','也'}
+say_represents = say_represents - update
 # convert ltp to bosonnlp foramt: {'word':words,'entity':[[start,end,org_name]]}
 def ltp_ner(news):
     mapper = {'Ni':'org_name','Nh':'person_name'}
@@ -81,6 +79,30 @@ def contains_say_keywords(c):
     return any(True if i in c else False for i in say_represents)
 
 
+def all_say_keywords(c):
+    return [i for i in c if i in say_represents]
+
+
+# find the most nearest entity, and update the points. TODO: bad implements, need refactor. 
+def correct_p(p):
+    # currectly fetch the first keyword
+    k_index = p[1].find(p[2][0])
+    e_index = p[1].find(p[0])
+    ner = uniteNER(p[1])
+    e = ner[1]
+    ret = p[0]
+    clost = k_index - e_index - 1
+    for start,end in e.items():
+        if k_index < end:
+            continue
+        if (k_index - end) < clost:
+            # update
+            ret = ner[2][start:end]
+            clost = k_index - end
+    return [''.join(ret),p[1],p[2]]
+
+
+# uniteNER, currently use the ltp as backend.
 def uniteNER(news):
     ner = ltp_ner(news)
     words = ner['word']
@@ -112,7 +134,7 @@ def bosonnlpNER(news):
     return N, entity_start, words
 
 
-def extract_points(news):
+def extract_points(news,correct=False):
     points = []
     ners, es, words = uniteNER(news)
     k = 0
@@ -125,14 +147,17 @@ def extract_points(news):
             start = k
             # find the finish signal
             while k < len(words) and words[k] not in end:k+=1
-            _p.append(''.join(words[start:k]))
+            _p.append(words[start:k])
             
             points.append(_p)
         k += 1
     # filter the none points sentences. 
     # currently methods is naive: filter the sentence by keywords which can represent says
     points = list(filter(lambda x: contains_say_keywords(x[1]),points))
-    
+    keywords = [all_say_keywords(p[1]) for p in points]
+    points = [[i[0],''.join(i[1]),k] for i,k in zip(points,keywords)]
+    if correct:
+        points = [correct_p(i) for i in points]
     return points
 
 
@@ -142,4 +167,4 @@ def process_news(news):
 
 def fetch(news):
     n = process_news(news)
-    return extract_points(n) 
+    return extract_points(n),extract_points(n,correct=True) 
